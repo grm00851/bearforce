@@ -1,4 +1,4 @@
-const CACHE_NAME = "bearforce-v71";
+const CACHE_NAME = "bearforce-v73";
 const APP_FILES = [
   "./",
   "./index.html",

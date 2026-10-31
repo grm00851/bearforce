@@ -1,7 +1,7 @@
 # BEARFORCE — бесплатная PWA-версия
 
 В архиве:
-- `index.html` — финальная версия BEARFORCE v69;
+- `index.html` — финальная версия BEARFORCE v72;
 - `manifest.webmanifest` — параметры установки на экран «Домой»;
 - `service-worker.js` — кэширование для повторного запуска офлайн;
 - `icon-192.png` и `icon-512.png` — значки приложения.
