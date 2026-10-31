@@ -1,4 +1,4 @@
-const CACHE_NAME = "bearforce-v69-pwa";
+const CACHE_NAME = "bearforce-v70-pwa";
 const APP_FILES = [
   "./",
   "./index.html",
