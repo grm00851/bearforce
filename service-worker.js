@@ -1,10 +1,10 @@
-const CACHE_NAME = "bearforce-v70-pwa";
+const CACHE_NAME = "bearforce-v71";
 const APP_FILES = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./icon-192.png",
-  "./icon-512.png"
+  "./icon-512.png","./anatomy-trapezius.jpg","./anatomy-neck.jpg"
 ];
 
 self.addEventListener("install", event => {
