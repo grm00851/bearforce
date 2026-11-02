@@ -2757,6 +2757,91 @@ exercises.push(...[{"id": 25, "name": "Шраги с гантелями", "muscl
 })();
 </script>
 
+
+<script id="bearforce-muscle-balance-and-exercise-art-v1">
+(function(){
+  const muscleWeights = {
+    1:{'Грудь':70,'Трицепс':20,'Плечи':10},
+    2:{'Грудь':65,'Трицепс':20,'Плечи':15},
+    3:{'Грудь':65,'Трицепс':25,'Плечи':10},
+    4:{'Спина':75,'Бицепс':15,'Трапеция':10},
+    5:{'Спина':65,'Бицепс':15,'Трапеция':20},
+    6:{'Спина':70,'Бицепс':20,'Трапеция':10},
+    7:{'Ноги':85,'Ягодицы':15},8:{'Ноги':85,'Ягодицы':15},9:{'Ноги':65,'Ягодицы':35},
+    10:{'Плечи':75,'Трицепс':25},11:{'Плечи':85,'Трапеция':15},
+    12:{'Бицепс':90,'Предплечья':10},13:{'Бицепс':85,'Предплечья':15},
+    14:{'Трицепс':90,'Плечи':10},15:{'Трицепс':90,'Плечи':10},
+    16:{'Пресс':80,'Спина':10,'Плечи':10},17:{'Пресс':100},
+    25:{'Трапеция':100},27:{'Трапеция':100},28:{'Трапеция':100},29:{'Трапеция':65,'Плечи':25,'Спина':10},
+    30:{'Шея':100},31:{'Шея':100},32:{'Шея':100},33:{'Шея':100},34:{'Шея':100}
+  };
+  const colors = {'Спина':'#65c9a5','Грудь':'#f3c86c','Бицепс':'#d889b8','Трицепс':'#c36fa0','Предплечья':'#9aabb2','Ноги':'#83a9ff','Ягодицы':'#d9a16f','Плечи':'#ff9875','Пресс':'#b4a1ef','Трапеция':'#d5b45e','Шея':'#78b9d4'};
+  function getShares(e){
+    if(e && e.muscles && Object.keys(e.muscles).length) return e.muscles;
+    return muscleWeights[e && e.id] || ({'Грудь':{'Грудь':100},'Спина':{'Спина':100},'Бицепс':{'Бицепс':100},'Трицепс':{'Трицепс':100},'Ноги':{'Ноги':100},'Плечи':{'Плечи':100},'Пресс':{'Пресс':100},'Трапеции':{'Трапеция':100},'Шея':{'Шея':100}}[e && e.muscle] || {'Прочее':100});
+  }
+  window.renderProgressDistribution = function(){
+    const all=Object.values(state.plan||{}).flat();
+    const totals={}; let total=0;
+    all.forEach(e=>Object.entries(getShares(e)).forEach(([k,v])=>{const n=Math.max(0,Number(v)||0);totals[k]=(totals[k]||0)+n;total+=n;}));
+    const order=['Грудь','Спина','Плечи','Трапеция','Шея','Бицепс','Трицепс','Предплечья','Ноги','Ягодицы','Пресс','Прочее'];
+    const host=document.getElementById('muscleLegend'),donut=document.getElementById('muscleDonut');
+    const totalEl=document.getElementById('donutTotal');
+    if(totalEl) totalEl.textContent=all.length;
+    let offset=0;const slices=[],legend=[];
+    order.forEach(name=>{const n=totals[name]||0;if(!n)return;const pct=n/total*100,next=offset+pct;slices.push(`${colors[name]||'#89949a'} ${offset}% ${next}%`);legend.push(`<div class="legend-row" style="--dot:${colors[name]||'#89949a'}"><span>${name}</span><strong>${Math.round(pct)}%</strong></div>`);offset=next;});
+    if(donut)donut.style.background=total?`conic-gradient(${slices.join(',')})`:'#283133';
+    if(host)host.innerHTML=legend.length?legend.join(''):'<span class="muted" style="font-size:12px">Добавь упражнения, и здесь появится распределение.</span>';
+    const note=document.querySelector('.progress-note');
+    if(note)note.textContent='Доли распределяются между основными и вспомогательными мышцами по ориентировочной модели для каждого упражнения. Это оценка состава плана, а не точное измерение физиологической нагрузки.';
+  };
+  function imageFor(e){
+    const m=String(e.muscle||'');
+    if(/трапец/i.test(m)||[25,27,28,29].includes(e.id))return 'anatomy-trapezius.jpg';
+    if(/ше[яи]/i.test(m)||[30,31,32,33,34].includes(e.id))return 'anatomy-neck.jpg';
+    const key=/груд/i.test(m)?'chest':/спин/i.test(m)?'back':/ног/i.test(m)?'legs':/ягод/i.test(m)?'glutes':/плеч/i.test(m)?'shoulders':/бицеп/i.test(m)||/трицеп/i.test(m)?'arms':/пресс/i.test(m)?'core':'allbody';
+    return window.BEARFORCEExerciseLibrary && window.BEARFORCEExerciseLibrary.groupImage ? window.BEARFORCEExerciseLibrary.groupImage(key) : '';
+  }
+  const originalCard=window.cardExercise;
+  window.cardExercise=function(e){
+    const exists=state.plan[currentDay].some(x=>x.id===e.id),src=imageFor(e);
+    return `<article class="exercise exercise-clickable text-exercise-card bf-muscle-image-card" role="button" tabindex="0" onclick="openExerciseDetailByName('${String(e.name).replace(/'/g,"\\'")}')" onkeydown="if(event.key==='Enter'){openExerciseDetailByName('${String(e.name).replace(/'/g,"\\'")}')}">${src?`<img class="bf-exercise-muscle-image" src="${src}" alt="Иллюстрация мышечной группы: ${e.muscle}" loading="lazy">`:''}<div class="text-exercise-icon">${e.emoji||'•'}</div><h3>${e.name}</h3><p>${e.muscle} · ${e.equipment}</p><p>${e.desc}</p><div class="exercise-card-actions"><button class="btn ${exists?"secondary":""} small" onclick="event.stopPropagation();addExercise(${e.id})">${exists?"✓ В плане":"＋ Добавить в план"}</button><button class="btn secondary small" onclick="event.stopPropagation();openExerciseDetailByName('${String(e.name).replace(/'/g,"\\'")}')">Как выполнять</button></div></article>`;
+  };
+  const css=document.createElement('style');
+  css.textContent=`
+  .bf-muscle-image-card{position:relative;overflow:hidden}
+  .bf-exercise-muscle-image{display:block;width:100%;height:150px;object-fit:cover;object-position:center 35%;border-radius:12px;margin:0 0 8px;background:var(--panel2)}
+  .bf-muscle-image-card .text-exercise-icon{width:36px;height:36px;font-size:19px}
+  #fzExerciseLibrary .fz-ex-card .bf-muscle-thumb{display:block;width:100%;height:112px;object-fit:cover;border-radius:10px;margin-bottom:9px;background:var(--panel2)}
+  #fzExerciseLibrary .fz-ex-detail-v2 .bf-muscle-detail-image{width:100%;max-height:250px;object-fit:cover;border-radius:16px;margin:14px 0 18px;background:var(--panel2)}
+  @media(max-width:650px){.bf-exercise-muscle-image{height:130px}}
+  `;
+  document.head.appendChild(css);
+  function addLibraryImages(){
+    const root=document.getElementById('fzExContent');if(!root)return;
+    root.querySelectorAll('.fz-ex-card').forEach(card=>{
+      if(card.querySelector('.bf-muscle-thumb'))return;
+      const idx=Number(card.dataset.ex),row=window.BEARFORCEExerciseLibraryData && window.BEARFORCEExerciseLibraryData[idx];
+      const text=card.innerText||'',isTrap=/трапец/i.test(text),isNeck=/ше[яи]/i.test(text);
+      let src=isTrap?'anatomy-trapezius.jpg':isNeck?'anatomy-neck.jpg':'';
+      if(!src){const key=/груд/i.test(text)?'chest':/спин/i.test(text)?'back':/ног/i.test(text)?'legs':/ягод/i.test(text)?'glutes':/плеч/i.test(text)?'shoulders':/бицеп|трицеп|рук/i.test(text)?'arms':/пресс|корпус/i.test(text)?'core':'allbody';src=window.BEARFORCEExerciseLibrary?.groupImage?.(key)||'';}
+      if(src){const img=document.createElement('img');img.className='bf-muscle-thumb';img.src=src;img.alt='Мышечная группа упражнения';img.loading='lazy';card.insertBefore(img,card.firstChild);}
+    });
+    const detail=root.querySelector('.fz-ex-detail-v2');
+    if(detail&&!detail.querySelector('.bf-muscle-detail-image')){
+      const text=detail.innerText||'',isTrap=/трапец/i.test(text),isNeck=/ше[яи]/i.test(text);
+      let src=isTrap?'anatomy-trapezius.jpg':isNeck?'anatomy-neck.jpg':'';
+      if(!src){const key=/груд/i.test(text)?'chest':/спин/i.test(text)?'back':/ног/i.test(text)?'legs':/ягод/i.test(text)?'glutes':/плеч/i.test(text)?'shoulders':/бицеп|трицеп/i.test(text)?'arms':/пресс/i.test(text)?'core':'allbody';src=window.BEARFORCEExerciseLibrary?.groupImage?.(key)||'';}
+      if(src){const img=document.createElement('img');img.className='bf-muscle-detail-image';img.src=src;img.alt='Мышечная группа, участвующая в упражнении';img.loading='lazy';detail.insertBefore(img,detail.querySelector('.fz-detail-heading'));}
+    }
+  }
+  const observer=new MutationObserver(addLibraryImages);
+  const start=()=>{const root=document.getElementById('fzExContent');if(root)observer.observe(root,{childList:true,subtree:true});addLibraryImages();if(typeof window.renderProgressDistribution==='function')window.renderProgressDistribution();};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+  setTimeout(start,500);
+})();
+</script>
+
 </body></html>
 
 <style>
